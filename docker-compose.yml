@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  sonar-scanner:
+    image: sonarsource/sonar-scanner-cli:latest
+    container_name: sonar-scanner
+    volumes:
+      - ${WORKING_DIRECTORY}:/workspace
+      - ./sonar-project.properties:/workspace/sonar-project.properties
+    environment:
+      SONAR_SCANNER_OPTS: "-Dsonar.projectKey=local-project"
+      SONAR_HOST_URL: http://sonarqube:9000
+      SONAR_TOKEN: ${SONAR_TOKEN}
+    working_dir: /workspace
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    environment:
+      SONAR_JDBC_URL: "jdbc:postgresql://db:5432/sonarqube"
+      SONAR_JDBC_USERNAME: "sonar"
+      SONAR_JDBC_PASSWORD: "sonar"
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:14
+    container_name: db
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonarqube
+    volumes:
+      - postgresql:/var/lib/postgresql
+    healthcheck: # Health check para PostgreSQL
+      test: [ "CMD-SHELL", "pg_isready -U sonar -h localhost -d sonarqube" ]
+      interval: 10s # Cada 10s verifica si PostgreSQL está listo
+      timeout: 5s # Tiempo máximo para responder antes de considerar como fallo
+      retries: 5 # Número de intentos
+volumes:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:
+  postgresql:

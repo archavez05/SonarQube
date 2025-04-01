@@ -1,0 +1,1 @@
+sonar-scanner -Dsonar.projectKey=bi-bel3-mobile-transfers-api-go -Dsonar.sources=. -Dsonar.host.url=http://localhost:9001 -Dsonar.login=sqa_ea34c04b92ad44f48b5b9ddea04cafb3b9b8e4ac
