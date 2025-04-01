@@ -1,0 +1,29 @@
+name: Run SonarQube on GitHub Actions
+
+on:
+  push:
+    branches:
+      - main  # Ejecutar cuando haya un push en la rama main
+
+jobs:
+  run-sonarqube:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Compose in SonarSccaner directory
+        run: |
+          cd SonarSccaner
+          docker-compose up -d
+          sleep 30  # Espera para que SonarQube se inicialice
+
+      - name: Check if SonarQube is running
+        run: |
+          curl -s http://localhost:9001 || exit 1
+
+      - name: Stop containers
+        run: |
+          cd SonarSccaner
+          docker-compose down
